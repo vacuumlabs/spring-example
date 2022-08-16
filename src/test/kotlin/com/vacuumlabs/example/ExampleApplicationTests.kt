@@ -28,4 +28,9 @@ class ExampleApplicationTests @Autowired constructor(
             }
         }
     }
+
+    @Test
+    fun `health endpoint`() {
+        mockMvc.get("/actuator/health").andExpect { status { isOk() } }
+    }
 }
