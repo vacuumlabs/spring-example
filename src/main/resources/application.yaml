@@ -1,0 +1,5 @@
+spring:
+  profiles:
+    active: json-logging
+  application:
+    name: spring-example
