@@ -1,6 +1,9 @@
 package com.vacuumlabs.example
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.TopicPartition
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
 import org.awaitility.Duration
@@ -10,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
@@ -86,6 +90,19 @@ class ExampleApplicationTests @Autowired constructor(
         assertThat(messageRepository.findAll()).isEqualTo(listOf(MessageEntity(1, "Test transaction")))
     }
 
+    @Test
+    @DirtiesContext
+    fun `new transaction - valid, nonexistent account number`() {
+        postNewTransaction(
+            TransactionDto(1, "ACC-654321", BigDecimal(1000), "Test transaction")
+        ).andExpect { status { isOk() } }
+
+        val record = awaitRecord("error.test-topic.message-saver")
+        val exceptionMessage = record?.headers()?.lastHeader("x-exception-message")?.value()?.decodeToString()
+        assertThat(exceptionMessage).endsWith("Account doesn't exist: ACC-654321")
+        assertThat(messageRepository.findAll()).isEmpty()
+    }
+
     private fun postNewTransaction(
         transactionDto: TransactionDto
     ): ResultActionsDsl {
@@ -93,6 +110,18 @@ class ExampleApplicationTests @Autowired constructor(
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(transactionDto)
+        }
+    }
+
+    private fun awaitRecord(topic: String): ConsumerRecord<String, String> {
+        val props = KafkaTestUtils.consumerProps(
+            "localhost:9092",
+            this.javaClass.name,
+            "false",
+        )
+        return KafkaConsumer<String, String>(props).use { dlq ->
+            dlq.assign(listOf(TopicPartition(topic, 0)))
+            KafkaTestUtils.getSingleRecord(dlq, topic, 10000)
         }
     }
 }

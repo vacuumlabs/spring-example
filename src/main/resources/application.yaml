@@ -21,6 +21,10 @@ spring:
       kafka:
         binder:
           brokers: localhost:9092
+        bindings:
+          message-saver-in-0:
+            consumer:
+              enable-dlq: true
       bindings:
         transaction-sender-out-0:
           destination: test-topic
