@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 
-@SpringBootTest
+@SpringBootTest(properties = ["management.metrics.export.prometheus.enabled=true"])
 @AutoConfigureMockMvc(print = MockMvcPrint.DEFAULT, printOnlyOnFailure = false)
 class ExampleApplicationTests @Autowired constructor(
     val mockMvc: MockMvc,
@@ -24,5 +24,10 @@ class ExampleApplicationTests @Autowired constructor(
         mockMvc.get("/actuator/health").andExpect { status { isOk() } }
         mockMvc.get("/actuator/health/readiness").andExpect { status { isOk() } }
         mockMvc.get("/actuator/health/liveness").andExpect { status { isOk() } }
+    }
+
+    @Test
+    fun `metrics endpoint`() {
+        mockMvc.get("/actuator/prometheus").andExpect { status { isOk() } }
     }
 }
