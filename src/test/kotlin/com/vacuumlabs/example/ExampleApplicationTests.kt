@@ -67,8 +67,15 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    fun `new transaction - invalid`() {
+        postNewTransaction(
+            TransactionDto(11, null, null, null)
+        ).andExpect { status { isBadRequest() } }
+    }
+
+    @Test
     @DirtiesContext
-    fun `new transaction`() {
+    fun `new transaction - valid`() {
         postNewTransaction(
             TransactionDto(1, "ACC-123456", BigDecimal(1000), "Test transaction")
         ).andExpect { status { isOk() } }

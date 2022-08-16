@@ -17,6 +17,11 @@ import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.validation.Valid
+import javax.validation.constraints.Max
+import javax.validation.constraints.Min
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Pattern
 
 @SpringBootApplication
 class ExampleApplication
@@ -31,7 +36,7 @@ class ExampleController(
     private val messageRepository: MessageRepository,
 ) {
     @PostMapping("/transactions")
-    fun kafkaPublish(@RequestBody transactionDto: TransactionDto) {
+    fun kafkaPublish(@Valid @RequestBody transactionDto: TransactionDto) {
         streamBridge.send("transaction-sender-out-0", transactionDto)
     }
 
@@ -48,9 +53,17 @@ class KafkaConfiguration {
 }
 
 data class TransactionDto(
+    @field:Min(0)
+    @field:Max(10)
     val priority: Int?,
+
+    @field:Pattern(regexp = "ACC-[0-9]{6}")
     val accountNumber: String?,
+
+    @NotNull
     val amount: BigDecimal?,
+
+    @field:NotBlank(message = "Message is mandatory")
     val description: String?,
 )
 
