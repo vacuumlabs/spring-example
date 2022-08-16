@@ -7,6 +7,7 @@ plugins {
     kotlin("plugin.spring") version "1.6.21"
     kotlin("plugin.jpa") version "1.6.21"
     id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
 }
 
 group = "com.vacuumlabs.example"
@@ -15,6 +16,7 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
+    maven("https://packages.confluent.io/maven")
 }
 
 extra["springCloudVersion"] = "2021.0.3"
@@ -29,6 +31,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("net.logstash.logback:logstash-logback-encoder:6.6")
+    implementation("io.confluent:kafka-avro-serializer:7.1.2")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

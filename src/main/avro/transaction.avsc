@@ -1,0 +1,22 @@
+{
+    "namespace": "com.vacuumlabs.example",
+    "type": "record",
+    "name": "TransactionMessage",
+    "fields": [
+        {
+            "name": "accountNumber",
+            "type": "string"
+        },
+        {
+            "name": "amount",
+            "type": {
+                "type": "string",
+                "java-class": "java.math.BigDecimal"
+            }
+        },
+        {
+            "name": "description",
+            "type": "string"
+        }
+    ]
+}

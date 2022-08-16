@@ -37,7 +37,14 @@ class ExampleController(
 ) {
     @PostMapping("/transactions")
     fun kafkaPublish(@Valid @RequestBody transactionDto: TransactionDto) {
-        streamBridge.send("transaction-sender-out-0", transactionDto)
+        streamBridge.send(
+            "transaction-sender-out-0",
+            TransactionMessage(
+                transactionDto.accountNumber!!,
+                transactionDto.amount!!,
+                transactionDto.description!!,
+            )
+        )
     }
 
     @GetMapping("/messages")
@@ -47,11 +54,11 @@ class ExampleController(
 @Configuration
 class KafkaConfiguration {
     @Bean
-    fun messageSaver(messageRepository: MessageRepository) = Consumer<TransactionDto> { message ->
+    fun messageSaver(messageRepository: MessageRepository) = Consumer<TransactionMessage> { message ->
         if (message.accountNumber != "ACC-123456") {
             throw java.lang.IllegalArgumentException("Account doesn't exist: ${message.accountNumber}")
         }
-        messageRepository.save(MessageEntity(id = null, message = message.description ?: ""))
+        messageRepository.save(MessageEntity(id = null, message = message.description))
     }
 }
 

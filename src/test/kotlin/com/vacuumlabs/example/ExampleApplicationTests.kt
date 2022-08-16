@@ -42,6 +42,7 @@ class ExampleApplicationTests @Autowired constructor(
             .withLocalCompose(true)
             .withExposedService("kafka", 9092, Wait.forListeningPort())
             .withExposedService("postgres", 5432, Wait.forListeningPort())
+            .withExposedService("schemaregistry", 8081, Wait.forListeningPort())
     }
 
     @Test
