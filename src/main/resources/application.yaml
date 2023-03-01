@@ -11,7 +11,7 @@ management:
 
 spring:
   profiles:
-    active: json-logging
+    active: # json-logging
   application:
     name: spring-example
   cloud:
@@ -20,14 +20,6 @@ spring:
     stream:
       kafka:
         binder:
-          brokers: localhost:9092
-          consumer-properties:
-            value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
-            schema.registry.url: http://localhost:8081
-            specific.avro.reader: true
-          producer-properties:
-            value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
-            schema.registry.url: http://localhost:8081
         bindings:
           message-saver-in-0:
             consumer:
@@ -35,14 +27,8 @@ spring:
       bindings:
         transaction-sender-out-0:
           destination: test-topic
-          content-type: application/*+avro
-          producer:
-            use-native-encoding: true
         message-saver-in-0:
           destination: test-topic
-          content-type: application/*+avro
-          consumer:
-            use-native-decoding: true
           group: message-saver
   datasource:
     url: jdbc:postgresql://localhost:5432/spring-example
