@@ -1,13 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.7.0"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("jvm") version "1.6.21"
-    kotlin("plugin.spring") version "1.6.21"
-    kotlin("plugin.jpa") version "1.6.21"
-    id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
+    id("org.springframework.boot") version "3.0.3"
+    id("io.spring.dependency-management") version "1.1.0"
+    kotlin("jvm") version "1.8.10"
+    kotlin("plugin.spring") version "1.8.10"
+    kotlin("plugin.jpa") version "1.8.10"
+    id("org.jlleitschuh.gradle.ktlint") version "11.2.0"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.6.0"
+    id("com.github.ben-manes.versions") version "0.46.0"
 }
 
 group = "com.vacuumlabs.example"
@@ -19,8 +20,8 @@ repositories {
     maven("https://packages.confluent.io/maven")
 }
 
-extra["springCloudVersion"] = "2021.0.3"
-extra["testcontainersVersion"] = "1.16.3"
+extra["springCloudVersion"] = "2022.0.1"
+extra["testcontainersVersion"] = "1.17.6"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -31,7 +32,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("net.logstash.logback:logstash-logback-encoder:6.6")
-    implementation("io.confluent:kafka-avro-serializer:7.1.2")
+    implementation("io.confluent:kafka-avro-serializer:7.3.2")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

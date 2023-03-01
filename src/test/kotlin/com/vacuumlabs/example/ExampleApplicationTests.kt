@@ -7,6 +7,7 @@ import org.apache.kafka.common.TopicPartition
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
 import org.awaitility.Duration
+
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -26,7 +27,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
 import java.math.BigDecimal
 
-@SpringBootTest(properties = ["management.metrics.export.prometheus.enabled=true"])
+@SpringBootTest(properties = ["management.prometheus.metrics.export.enabled=true"])
 @AutoConfigureMockMvc(print = MockMvcPrint.DEFAULT, printOnlyOnFailure = false)
 @Testcontainers
 class ExampleApplicationTests @Autowired constructor(
@@ -40,6 +41,7 @@ class ExampleApplicationTests @Autowired constructor(
         @JvmStatic
         val dc = DockerComposeContainer(File("docker-compose.yaml"))
             .withLocalCompose(true)
+            .withOptions("--compatibility")
             .withExposedService("kafka", 9092, Wait.forListeningPort())
             .withExposedService("postgres", 5432, Wait.forListeningPort())
             .withExposedService("schemaregistry", 8081, Wait.forListeningPort())
@@ -120,9 +122,9 @@ class ExampleApplicationTests @Autowired constructor(
             this.javaClass.name,
             "false",
         )
-        return KafkaConsumer<String, String>(props).use { dlq ->
-            dlq.assign(listOf(TopicPartition(topic, 0)))
-            KafkaTestUtils.getSingleRecord(dlq, topic, 10000)
+        return KafkaConsumer<String, String>(props).use { consumer ->
+            consumer.assign(listOf(TopicPartition(topic, 0)))
+            KafkaTestUtils.getSingleRecord(consumer, topic, java.time.Duration.ofSeconds(10))
         }
     }
 }
