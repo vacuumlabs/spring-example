@@ -29,7 +29,6 @@ class SecurityConfig {
                 authorize(anyRequest, authenticated)
             }
             httpBasic { }
-            // csrf { disable() }
         }
         return http.build()
     }
