@@ -14,6 +14,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.kafka.test.utils.KafkaTestUtils
+import org.springframework.security.test.context.support.WithUserDetails
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
@@ -39,6 +42,7 @@ class ExampleApplicationTests @Autowired constructor(
         @Container
         @JvmStatic
         val dc = DockerComposeContainer(File("docker-compose.yaml"))
+            .withOptions("--compatibility")
             .withLocalCompose(true)
             .withExposedService("kafka", 9092, Wait.forListeningPort())
             .withExposedService("postgres", 5432, Wait.forListeningPort())
@@ -50,15 +54,19 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithUserDetails()
     fun `get messages`() {
-        mockMvc.get("/messages").andExpect {
-            status {
-                isOk()
-            }
-            content {
-                json("[]")
-            }
+        mockMvc.get("/messages") {
+            with(httpBasic("user", "p@55word"))
         }
+            .andExpect {
+                status {
+                    isOk()
+                }
+                content {
+                    json("[]")
+                }
+            }
     }
 
     @Test
@@ -111,6 +119,8 @@ class ExampleApplicationTests @Autowired constructor(
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(transactionDto)
+            with(httpBasic("user", "p@55word"))
+            with(csrf())
         }
     }
 
