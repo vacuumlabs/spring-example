@@ -15,6 +15,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.kafka.test.utils.KafkaTestUtils
+import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
@@ -40,6 +42,7 @@ class ExampleApplicationTests @Autowired constructor(
         @Container
         @JvmStatic
         val dc = DockerComposeContainer(File("docker-compose.yaml"))
+            .withOptions("--compatibility")
             .withLocalCompose(true)
             .withOptions("--compatibility")
             .withExposedService("kafka", 9092, Wait.forListeningPort())
@@ -52,15 +55,27 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     fun `get messages`() {
-        mockMvc.get("/messages").andExpect {
-            status {
-                isOk()
+        mockMvc.get("/messages")
+            .andExpect {
+                status {
+                    isOk()
+                }
+                content {
+                    json("[]")
+                }
             }
-            content {
-                json("[]")
+    }
+
+    @Test
+    fun `get messages without authentication - invalid`() {
+        mockMvc.get("/messages")
+            .andExpect {
+                status {
+                    isUnauthorized()
+                }
             }
-        }
     }
 
     @Test
@@ -74,6 +89,7 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     fun `new transaction - invalid`() {
         postNewTransaction(
             TransactionDto(11, null, null, null)
@@ -81,6 +97,7 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     @DirtiesContext
     fun `new transaction - valid`() {
         postNewTransaction(
@@ -94,6 +111,7 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     @DirtiesContext
     fun `new transaction - valid, nonexistent account number`() {
         postNewTransaction(
@@ -106,6 +124,13 @@ class ExampleApplicationTests @Autowired constructor(
         assertThat(messageRepository.findAll()).isEmpty()
     }
 
+    @Test
+    fun `new transaction without authentication - invalid`() {
+        postNewTransaction(
+            TransactionDto(1, "ACC-123456", BigDecimal(1000), "Test transaction")
+        ).andExpect { status { isUnauthorized() } }
+    }
+
     private fun postNewTransaction(
         transactionDto: TransactionDto
     ): ResultActionsDsl {
@@ -113,6 +138,7 @@ class ExampleApplicationTests @Autowired constructor(
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(transactionDto)
+            with(csrf())
         }
     }
 
