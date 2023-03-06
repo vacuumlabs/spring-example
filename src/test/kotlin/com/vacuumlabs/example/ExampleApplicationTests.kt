@@ -67,6 +67,16 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    fun `get messages without authentication - invalid`() {
+        mockMvc.get("/messages")
+            .andExpect {
+                status {
+                    isUnauthorized()
+                }
+            }
+    }
+
+    @Test
     fun `health endpoint`() {
         mockMvc.get("/actuator/health").andExpect { status { isOk() } }
     }
@@ -110,6 +120,13 @@ class ExampleApplicationTests @Autowired constructor(
         val exceptionMessage = record?.headers()?.lastHeader("x-exception-message")?.value()?.decodeToString()
         assertThat(exceptionMessage).endsWith("Account doesn't exist: ACC-654321")
         assertThat(messageRepository.findAll()).isEmpty()
+    }
+
+    @Test
+    fun `new transaction without authentication - invalid`() {
+        postNewTransaction(
+            TransactionDto(1, "ACC-123456", BigDecimal(1000), "Test transaction")
+        ).andExpect { status { isUnauthorized() } }
     }
 
     private fun postNewTransaction(
