@@ -67,13 +67,11 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
-    @WithMockUser
     fun `health endpoint`() {
         mockMvc.get("/actuator/health").andExpect { status { isOk() } }
     }
 
     @Test
-    @WithMockUser
     fun `metrics endpoint`() {
         mockMvc.get("/actuator/prometheus").andExpect { status { isOk() } }
     }
