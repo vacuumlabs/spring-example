@@ -14,9 +14,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.kafka.test.utils.KafkaTestUtils
-import org.springframework.security.test.context.support.WithUserDetails
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
@@ -54,11 +53,9 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
-    @WithUserDetails()
+    @WithMockUser
     fun `get messages`() {
-        mockMvc.get("/messages") {
-            with(httpBasic("user", "p@55word"))
-        }
+        mockMvc.get("/messages")
             .andExpect {
                 status {
                     isOk()
@@ -70,16 +67,19 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     fun `health endpoint`() {
         mockMvc.get("/actuator/health").andExpect { status { isOk() } }
     }
 
     @Test
+    @WithMockUser
     fun `metrics endpoint`() {
         mockMvc.get("/actuator/prometheus").andExpect { status { isOk() } }
     }
 
     @Test
+    @WithMockUser
     fun `new transaction - invalid`() {
         postNewTransaction(
             TransactionDto(11, null, null, null)
@@ -87,6 +87,7 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     @DirtiesContext
     fun `new transaction - valid`() {
         postNewTransaction(
@@ -100,6 +101,7 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     @DirtiesContext
     fun `new transaction - valid, nonexistent account number`() {
         postNewTransaction(
@@ -119,7 +121,6 @@ class ExampleApplicationTests @Autowired constructor(
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(transactionDto)
-            with(httpBasic("user", "p@55word"))
             with(csrf())
         }
     }
