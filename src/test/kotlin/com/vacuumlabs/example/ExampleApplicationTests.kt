@@ -7,6 +7,7 @@ import org.apache.kafka.common.TopicPartition
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
 import org.awaitility.Duration
+
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -14,6 +15,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.kafka.test.utils.KafkaTestUtils
+import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
@@ -26,7 +29,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
 import java.math.BigDecimal
 
-@SpringBootTest(properties = ["management.metrics.export.prometheus.enabled=true"])
+@SpringBootTest(properties = ["management.prometheus.metrics.export.enabled=true"])
 @AutoConfigureMockMvc(print = MockMvcPrint.DEFAULT, printOnlyOnFailure = false)
 @Testcontainers
 class ExampleApplicationTests @Autowired constructor(
@@ -39,7 +42,9 @@ class ExampleApplicationTests @Autowired constructor(
         @Container
         @JvmStatic
         val dc = DockerComposeContainer(File("docker-compose.yaml"))
+            .withOptions("--compatibility")
             .withLocalCompose(true)
+            .withOptions("--compatibility")
             .withExposedService("kafka", 9092, Wait.forListeningPort())
             .withExposedService("postgres", 5432, Wait.forListeningPort())
             .withExposedService("schemaregistry", 8081, Wait.forListeningPort())
@@ -50,15 +55,27 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     fun `get messages`() {
-        mockMvc.get("/messages").andExpect {
-            status {
-                isOk()
+        mockMvc.get("/messages")
+            .andExpect {
+                status {
+                    isOk()
+                }
+                content {
+                    json("[]")
+                }
             }
-            content {
-                json("[]")
+    }
+
+    @Test
+    fun `get messages without authentication - invalid`() {
+        mockMvc.get("/messages")
+            .andExpect {
+                status {
+                    isUnauthorized()
+                }
             }
-        }
     }
 
     @Test
@@ -72,6 +89,7 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     fun `new transaction - invalid`() {
         postNewTransaction(
             TransactionDto(11, null, null, null)
@@ -79,6 +97,7 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     @DirtiesContext
     fun `new transaction - valid`() {
         postNewTransaction(
@@ -92,6 +111,7 @@ class ExampleApplicationTests @Autowired constructor(
     }
 
     @Test
+    @WithMockUser
     @DirtiesContext
     fun `new transaction - valid, nonexistent account number`() {
         postNewTransaction(
@@ -104,6 +124,13 @@ class ExampleApplicationTests @Autowired constructor(
         assertThat(messageRepository.findAll()).isEmpty()
     }
 
+    @Test
+    fun `new transaction without authentication - invalid`() {
+        postNewTransaction(
+            TransactionDto(1, "ACC-123456", BigDecimal(1000), "Test transaction")
+        ).andExpect { status { isUnauthorized() } }
+    }
+
     private fun postNewTransaction(
         transactionDto: TransactionDto
     ): ResultActionsDsl {
@@ -111,6 +138,7 @@ class ExampleApplicationTests @Autowired constructor(
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(transactionDto)
+            with(csrf())
         }
     }
 
@@ -120,9 +148,9 @@ class ExampleApplicationTests @Autowired constructor(
             this.javaClass.name,
             "false",
         )
-        return KafkaConsumer<String, String>(props).use { dlq ->
-            dlq.assign(listOf(TopicPartition(topic, 0)))
-            KafkaTestUtils.getSingleRecord(dlq, topic, 10000)
+        return KafkaConsumer<String, String>(props).use { consumer ->
+            consumer.assign(listOf(TopicPartition(topic, 0)))
+            KafkaTestUtils.getSingleRecord(consumer, topic, java.time.Duration.ofSeconds(10))
         }
     }
 }

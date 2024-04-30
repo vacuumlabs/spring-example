@@ -16,7 +16,7 @@ spring:
     name: spring-example
   cloud:
     function:
-      definition: transaction-sender;message-saver
+      definition: message-saver
     stream:
       kafka:
         binder:
