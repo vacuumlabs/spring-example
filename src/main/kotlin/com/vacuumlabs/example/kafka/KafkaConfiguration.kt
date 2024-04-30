@@ -11,6 +11,9 @@ class KafkaConfiguration {
     @Bean("message-saver")
     fun messageSaver(messageRepository: MessageRepository) =
         Consumer<TransactionDto> { message ->
+            if (message.accountNumber != "ACC-123456") {
+                throw java.lang.IllegalArgumentException("Account doesn't exist: ${message.accountNumber}")
+            }
             messageRepository.save(MessageEntity(id = null, message = message.description ?: ""))
         }
 }
