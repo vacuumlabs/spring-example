@@ -14,3 +14,9 @@ spring:
     active: json-logging
   application:
     name: spring-example
+  datasource:
+    url: jdbc:postgresql://localhost:5432/spring-example
+    username: postgres
+    password: postgres
+
+spring.jpa.hibernate.ddl-auto: create

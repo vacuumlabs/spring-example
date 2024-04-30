@@ -20,14 +20,20 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    runtimeOnly("org.postgresql:postgresql")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
 }
 
 tasks.withType<KotlinCompile> {
