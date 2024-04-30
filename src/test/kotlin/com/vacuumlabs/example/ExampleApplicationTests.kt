@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 
-@SpringBootTest(properties = ["management.metrics.export.prometheus.enabled=true"])
+@SpringBootTest(properties = ["management.prometheus.metrics.export.enabled=true"])
 @AutoConfigureMockMvc(print = MockMvcPrint.DEFAULT, printOnlyOnFailure = false)
 class ExampleApplicationTests @Autowired constructor(
     val mockMvc: MockMvc,
