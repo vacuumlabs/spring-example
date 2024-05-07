@@ -1,13 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.2.5"
-    id("io.spring.dependency-management") version "1.1.4"
-    kotlin("jvm") version "1.9.23"
-    kotlin("plugin.spring") version "1.9.23"
-    kotlin("plugin.jpa") version "1.9.23"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
-    id("com.github.ben-manes.versions") version "0.51.0"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.kotlin.jpa)
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.benmanes.versions)
 }
 
 group = "com.vacuumlabs.example"
@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation(platform("org.springframework.cloud:spring-cloud-dependencies:2023.0.1"))
+    implementation(platform(libs.spring.cloud.dependencies))
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -28,7 +28,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("net.logstash.logback:logstash-logback-encoder:7.4")
+    implementation(libs.logstash.logback.encoder)
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     runtimeOnly("org.postgresql:postgresql")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -38,7 +38,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.springframework.kafka:spring-kafka-test")
-    testImplementation("org.awaitility:awaitility:4.2.1")
+    testImplementation("org.awaitility:awaitility")
     testImplementation("org.testcontainers:kafka")
 }
 
