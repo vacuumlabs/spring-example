@@ -9,27 +9,23 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 
-@SpringBootTest(properties = ["management.prometheus.metrics.export.enabled=true"])
+@SpringBootTest
 @AutoConfigureMockMvc(print = MockMvcPrint.DEFAULT, printOnlyOnFailure = false)
 @Import(ContainerConfiguration::class)
-class ExampleApplicationTests @Autowired constructor(
-    val mockMvc: MockMvc,
-) {
-
-
-    @Test
-    fun contextLoads() {
+class DbIntegrationTests
+    @Autowired
+    constructor(
+        val mockMvc: MockMvc,
+    ) {
+        @Test
+        fun `get messages`() {
+            mockMvc.get("/messages").andExpect {
+                status {
+                    isOk()
+                }
+                content {
+                    json("[]")
+                }
+            }
+        }
     }
-
-    @Test
-    fun `health endpoints`() {
-        mockMvc.get("/actuator/health").andExpect { status { isOk() } }
-        mockMvc.get("/actuator/health/readiness").andExpect { status { isOk() } }
-        mockMvc.get("/actuator/health/liveness").andExpect { status { isOk() } }
-    }
-
-    @Test
-    fun `metrics endpoint`() {
-        mockMvc.get("/actuator/prometheus").andExpect { status { isOk() } }
-    }
-}

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MessageController(
-    val messageRepository: MessageRepository
+    val messageRepository: MessageRepository,
 ) {
     @GetMapping("/messages")
     fun getMessages(): Iterable<MessageEntity> = messageRepository.findAll()
