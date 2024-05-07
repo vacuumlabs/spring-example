@@ -1,0 +1,10 @@
+### new transaction
+POST http://127.0.0.1:8080/transactions HTTP/1.1
+Content-Type: application/json
+
+{
+    "priority": 3,
+    "accountNumber": "ACC-123456",
+    "amount": 100,
+    "description": "Test transaction"
+}

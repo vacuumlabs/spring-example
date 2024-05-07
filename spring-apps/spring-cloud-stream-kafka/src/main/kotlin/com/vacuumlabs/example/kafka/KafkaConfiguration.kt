@@ -1,19 +1,21 @@
 package com.vacuumlabs.example.kafka
 
-import com.vacuumlabs.example.db.MessageEntity
-import com.vacuumlabs.example.db.MessageRepository
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.util.function.Consumer
 
 @Configuration
 class KafkaConfiguration {
+    val logger: Logger = LoggerFactory.getLogger(javaClass)
+
     @Bean("message-saver")
-    fun messageSaver(messageRepository: MessageRepository) =
-        Consumer<TransactionDto> { message ->
-            if (message.accountNumber != "ACC-123456") {
-                throw java.lang.IllegalArgumentException("Account doesn't exist: ${message.accountNumber}")
+    fun messageSaver(transactionRepository: TransactionRepository) =
+        Consumer<TransactionDto> { transaction ->
+            if (transaction.accountNumber != "ACC-123456") {
+                throw java.lang.IllegalArgumentException("Account doesn't exist: ${transaction.accountNumber}")
             }
-            messageRepository.save(MessageEntity(id = null, message = message.description ?: ""))
+            transactionRepository.save(transaction)
         }
 }

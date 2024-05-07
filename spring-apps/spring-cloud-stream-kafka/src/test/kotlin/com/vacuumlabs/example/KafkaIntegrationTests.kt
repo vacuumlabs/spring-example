@@ -1,9 +1,8 @@
 package com.vacuumlabs.example
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.vacuumlabs.example.db.MessageEntity
-import com.vacuumlabs.example.db.MessageRepository
 import com.vacuumlabs.example.kafka.TransactionDto
+import com.vacuumlabs.example.kafka.TransactionRepository
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
@@ -33,20 +32,21 @@ class KafkaIntegrationTests
     constructor(
         val mockMvc: MockMvc,
         val objectMapper: ObjectMapper,
-        val messageRepository: MessageRepository,
+        val transactionRepository: TransactionRepository,
         val kafkaContainer: KafkaContainer,
     ) {
         @Test
         @DirtiesContext
         fun `new transaction`() {
+            val transactionDto = TransactionDto(1, "ACC-123456", BigDecimal(1000), "Test transaction")
             postNewTransaction(
-                TransactionDto(1, "ACC-123456", BigDecimal(1000), "Test transaction"),
+                transactionDto,
             ).andExpect { status { isOk() } }
 
             Awaitility.await().pollDelay(Duration.ofMillis(100)).atMost(Duration.ofSeconds(5)).until {
-                messageRepository.findAll().toList().isNotEmpty()
+                transactionRepository.findAll().toList().isNotEmpty()
             }
-            assertThat(messageRepository.findAll()).isEqualTo(listOf(MessageEntity(1, "Test transaction")))
+            assertThat(transactionRepository.findAll()).isEqualTo(listOf(transactionDto))
         }
 
         @Test
@@ -59,7 +59,7 @@ class KafkaIntegrationTests
             val record = awaitRecord("error.test-topic.message-saver")
             val exceptionMessage = record?.headers()?.lastHeader("x-exception-message")?.value()?.decodeToString()
             assertThat(exceptionMessage).endsWith("Account doesn't exist: ACC-654321")
-            assertThat(messageRepository.findAll()).isEmpty()
+            assertThat(transactionRepository.findAll()).isEmpty()
         }
 
         private fun postNewTransaction(transactionDto: TransactionDto): ResultActionsDsl {
