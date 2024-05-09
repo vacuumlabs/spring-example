@@ -1,4 +1,4 @@
-rootProject.name = "spring-apps"
+rootProject.name = "spring-example"
 
 include("spring-webmvc")
 include("spring-jpa")
