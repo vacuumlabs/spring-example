@@ -1,0 +1,57 @@
+name: Run app in a background
+description: Run application in docker container in a background
+
+inputs:
+  network:
+    required: true
+    description: 'Network to run the container in'
+  app-image:
+    required: true
+    description: 'Image to run'
+  postgres-host:
+    required: true
+    description: 'Postgres host'
+
+runs:
+    using: composite
+    steps:
+      - name: Run mockserver in background
+        uses: gacts/run-and-post-run@v1
+        with:
+          run: docker run --rm -d
+            --network "${{ inputs.network }}"
+            --name mock
+            -v "${{ github.workspace }}/docker/bb-backend/mockserver:/config:ro"
+            jordimartin/mmock:v3.1.5 -server-statistics=false -console=false -server-port 8080
+          post: docker stop mock
+
+      - name: Run app in a background
+        uses: gacts/run-and-post-run@v1
+        with:
+          run: docker run --rm -d
+            --network "${{ inputs.network }}"
+            --name app
+            -e "TM_CORE_URL=http://mock:8080"
+            -e "POSTGRES_HOST=postgres"
+            ${{ inputs.app-image }}
+          post: docker stop app
+
+      - name: Wait app up and running
+        shell: bash
+        run: |
+          echo "Waiting a MMock..."
+          docker run --rm --network "${{ inputs.network }}" curlimages/curl \
+            --output /dev/null \
+            --head -X GET --retry 20 \
+            --silent \
+            --retry-all-errors --retry-delay 1 \
+            http://mock:8080/live
+
+          echo "MMock is ready! waiting app.."
+
+          docker run --rm --network "${{ inputs.network }}" curlimages/curl \
+           --output /dev/null \
+           --head -X GET --retry 20 \
+           --silent \
+           --retry-all-errors --retry-delay 1 \
+          http://app:8083/actuator/health/readiness

@@ -1,0 +1,64 @@
+name: Build and push Docker image with Gradle
+description: Logs into ECR, then builds, tags and pushes Docker image using Gradle
+
+inputs:
+  image-name:
+    required: true
+    description: 'Docker image name to build - in other words AWS repository name'
+  aws-region:
+    required: true
+    description: 'AWS region to deploy into'
+  aws-role:
+    required: true
+    description: 'ARN of the role to push to ECR'
+
+outputs:
+  image-tag:
+    value: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.image-name }}:${{ steps.docker-tags.outputs.version }}
+    description: 'Complete Docker image tag'
+
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: ${{ inputs.aws-role }}
+        mask-aws-account-id: false
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      #outputs: ${{ steps.login-ecr.outputs.registry }}
+
+    - name: Set Docker tags
+      id: docker-tags
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ inputs.image-name }}
+        tags: |
+          type=sha,priority=1100
+          type=ref,event=branch
+        sep-tags: ' '
+
+    # we don't use push --all-tags since we don't always want to push also latest tag
+    - name: Tag and push Docker images
+      shell: bash
+      run: |
+        echo "## Pushed docker images" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        for tag in ${{ steps.docker-tags.outputs.tags }}; do
+          docker image tag ${{ inputs.image-name }} ${{ steps.login-ecr.outputs.registry }}/${tag}
+          docker image push ${{ steps.login-ecr.outputs.registry }}/${tag}
+          echo "- ``${{ steps.login-ecr.outputs.registry }}/${tag}``" >> $GITHUB_STEP_SUMMARY
+        done
+
+# Disable caching because it is not used by `gradle bootBuildImage`; TODO: revisit later maybe it can be made to work
+#
+#    - name: Push image cache
+#      if: steps.cache.outputs.cache-hit != 'true'
+#      shell: bash
+#      run: >-
+#        docker tag ${{ inputs.image-name }} localhost:5000/${{ inputs.image-name }} &&
+#        docker push localhost:5000/${{ inputs.image-name }} || true
