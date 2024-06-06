@@ -1,0 +1,55 @@
+name: Deploy app with Argo CD
+description: Sets tag to Argo CD app and syncs it
+
+inputs:
+  argocd-url:
+    required: true
+    description: 'URL for ArgoCD server'
+  argocd-user:
+    required: true
+    description: 'User name for logging in to ArgoCD'
+  argocd-password:
+    required: true
+    description: 'Password for logging in to ArgoCD'
+  argocd-app-name:
+    required: true
+    description: 'Argo CD app name'
+  image-tag:
+    required: true
+    description: 'ECR image tag'
+
+runs:
+  using: composite
+  steps:
+    - name: Install ArgoCD CLI
+      shell: bash
+      run: |
+        # get latest release version
+        version=$(git ls-remote --tags https://github.com/argoproj/argo-cd | cut -f 2 | awk -F/ '{print $NF}' | sort -V | tail -n 1)
+        echo "Argo CD CLI version: ${version}"
+
+        # download the binary and make it executable
+        curl -L -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/${version}/argocd-linux-amd64
+        chmod +x /usr/local/bin/argocd
+
+        # test
+        which argocd
+
+    - name: Log in to ArgoCD
+      shell: bash
+      run: |
+        echo argocd login --grpc-web --username ${{ inputs.argocd-user }} --password ${{ inputs.argocd-password }} ${{ inputs.argocd-url }}
+        argocd login --grpc-web --username ${{ inputs.argocd-user }} --password ${{ inputs.argocd-password }} ${{ inputs.argocd-url }}
+
+    - name: Update image tag in ArgoCD
+      shell: bash
+      run: |
+        # setup env
+        imageVersion=$(echo ${{ inputs.image-tag }} | cut -d ':' -f 2)
+        echo "App name: ${{ inputs.argocd-app-name }}"
+        echo "Image version: ${imageVersion}"
+
+        # do the app work!
+        argocd --grpc-web app set ${{ inputs.argocd-app-name }} -p image.tag=${imageVersion}
+        argocd --grpc-web app sync ${{ inputs.argocd-app-name }}
+        argocd --grpc-web app wait ${{ inputs.argocd-app-name }}

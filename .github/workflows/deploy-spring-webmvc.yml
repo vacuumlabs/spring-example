@@ -1,0 +1,70 @@
+name: spring-webmvc - Build and Deploy
+
+on:
+  push:
+    paths:
+      - spring-webmvc/**
+      - .github/workflows/deploy-spring-webmvc.yml
+  workflow_dispatch: # Enables triggering the workflow manually from the Actions tab
+
+permissions:
+  id-token: write
+  contents: read
+  checks: write
+
+env:
+  WORKDIR: spring-webmvc
+  IMAGE_NAME: spring-webmvc
+
+#defaults:
+#  run:
+#    shell: bash
+#    working-directory: ${{ env.WORKDIR }}
+
+jobs:
+  build:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    outputs:
+      pushed-image-tag: ${{ steps.ecr-push.outputs.image-tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Gradle Build
+        uses: ./.github/actions/gradle-build
+
+      - name: Docker Build
+        uses: ./.github/actions/docker-build
+        with:
+          image-name: ${{ env.IMAGE_NAME }}
+
+      - name: ECR Push
+        id: ecr-push
+        uses: ./.github/actions/ecr-push
+        with:
+          image-name: ${{ env.IMAGE_NAME }}
+          aws-role: ${{ vars.AWS_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+  deploy:
+    name: Deploy with ArgoCD
+    runs-on: ubuntu-latest
+    environment: dev
+    needs: build
+    if: success() && github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Deploy
+        id: argocd-deploy
+        uses: ./.github/actions/argocd-deploy
+        with:
+          argocd-url: ${{ vars.ARGOCD_URL }}
+          argocd-user: ${{ vars.ARGOCD_USER }}
+          argocd-password: ${{ secrets.ARGOCD_PASSWORD }}
+          argocd-app-name: ${{ env.IMAGE_NAME }}
+          image-tag: ${{ needs.build.outputs.pushed-image-tag }}
