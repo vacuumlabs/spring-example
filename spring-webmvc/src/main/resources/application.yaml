@@ -8,3 +8,23 @@ management:
       show-details: always
       probes:
         enabled: true
+  tracing:
+    sampling:
+      probability: 1
+  otlp:
+    tracing:
+      endpoint: "http://localhost:4317"
+
+spring:
+  application:
+    name: spring-webmvc
+logging:
+  file:
+    name: spring-webmvc.log
+
+#otel:
+#  java:
+#    disabled:
+#      resource:
+#        providers:
+#          - "io.opentelemetry.instrumentation.resources.ProcessResourceProvider"
