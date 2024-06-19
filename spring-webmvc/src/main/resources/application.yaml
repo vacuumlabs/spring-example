@@ -8,12 +8,12 @@ management:
       show-details: always
       probes:
         enabled: true
-  tracing:
-    sampling:
-      probability: 1
-  otlp:
-    tracing:
-      endpoint: "http://localhost:4317"
+#  tracing:
+#    sampling:
+#      probability: 1
+#  otlp:
+#    tracing:
+#      endpoint: "http://localhost:4318/v1/traces"
 
 spring:
   application:
