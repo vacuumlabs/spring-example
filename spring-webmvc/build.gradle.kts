@@ -18,7 +18,7 @@ repositories {
     mavenCentral()
 }
 
-extra["opentelemetry.version"] = "1.38.0"
+extra["opentelemetry.version"] = "1.39.0"
 
 dependencies {
     implementation(platform(libs.spring.cloud.dependencies))
@@ -29,14 +29,11 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation(libs.logstash.logback.encoder)
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("io.micrometer:micrometer-registry-prometheus")
-//    implementation("io.micrometer:micrometer-tracing-bridge-otel")
-//    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-
-    implementation(platform("io.opentelemetry:opentelemetry-bom:1.38.0"))
-    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.4.0-alpha"))
-    implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:junit-jupiter")

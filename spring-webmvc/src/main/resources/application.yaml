@@ -11,16 +11,22 @@ management:
   tracing:
     sampling:
       probability: 1
+  opentelemetry:
+    resource-attributes:
+        service.instance.id: ${random.uuid}
   otlp:
     tracing:
-      endpoint: "http://localhost:4317"
+      endpoint: "http://localhost:4318/v1/traces"
 
 spring:
   application:
     name: spring-webmvc
-logging:
-  file:
-    name: spring-webmvc.log
+  main:
+    banner-mode: off
+  profiles:
+    active: json-file-logging
+
+logging.file.name: data/logs/${spring.application.name}.log
 
 #otel:
 #  java:

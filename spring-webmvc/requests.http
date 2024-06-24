@@ -9,3 +9,6 @@ GET http://127.0.0.1:8080/actuator/health/liveness HTTP/1.1
 
 ### metrics
 GET http://127.0.0.1:8080/actuator/prometheus HTTP/1.1
+
+### hello
+GET http://127.0.0.1:8080/ HTTP/1.1

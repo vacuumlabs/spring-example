@@ -1,5 +1,6 @@
 package com.vacuumlabs.example
 
+import io.github.oshai.kotlinlogging.withLoggingContext
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
@@ -10,7 +11,9 @@ class HelloController {
 
     @GetMapping
     fun hello(): String {
-        logger.info("Hello endpoint called")
+        withLoggingContext("userId" to "123") {
+            logger.info("Hello endpoint called")
+        }
         return "Hello, World!"
     }
 }
