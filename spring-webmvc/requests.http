@@ -12,3 +12,11 @@ GET http://127.0.0.1:8080/actuator/prometheus HTTP/1.1
 
 ### hello
 GET http://127.0.0.1:8080/ HTTP/1.1
+
+### bye
+GET http://127.0.0.1:8080/bye HTTP/1.1
+traceparent:00-0a01651916cd43dd8448eb211c80319c-00f067aa0ba902b7-01
+
+### bye
+GET http://127.0.0.1:8080/ HTTP/1.1
+X-Amzn-Trace-Id:Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1

@@ -10,13 +10,22 @@ management:
         enabled: true
   tracing:
     sampling:
-      probability: 1
+      probability: 1 # tail-sampling in collector is preferred
   opentelemetry:
     resource-attributes:
-        service.instance.id: ${random.uuid}
-  otlp:
-    tracing:
-      endpoint: "http://localhost:4318/v1/traces"
+      service.instance.id: ${random.uuid}
+#  otlp:
+#    tracing:
+#      endpoint: "http://localhost:4318/v1/traces" # custom config below
+
+otel:
+  tracing:
+    propagation:
+#      strategy: "extracted,w3c,xray"
+      extractStrategy: "extracted,w3c,xray"
+      injectStrategy: "extracted,w3c"
+  exporter:
+    endpoint: "http://localhost:4317"
 
 spring:
   application:
@@ -27,10 +36,3 @@ spring:
     active: json-file-logging
 
 logging.file.name: data/logs/${spring.application.name}.log
-
-#otel:
-#  java:
-#    disabled:
-#      resource:
-#        providers:
-#          - "io.opentelemetry.instrumentation.resources.ProcessResourceProvider"
