@@ -10,6 +10,7 @@ Github workflows, monitoring, etc.
 
 ## Docs
 
+- [Observability for Spring](spring-webmvc%2Fsrc%2Fmain%2Fkotlin%2Fcom%2Fvacuumlabs%2Fexample%2Ftelemetry%2FREADME.md)
 - Blueprints
   - [Gradle Build](docs%2Fblueprints%2FGradleBuild.md)
   - [Gradle Build for Kotlin JVM projects](docs%2Fblueprints%2FGradleBuildKotlinJvm.md)
