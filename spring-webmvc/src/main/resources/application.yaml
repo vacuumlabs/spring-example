@@ -8,3 +8,32 @@ management:
       show-details: always
       probes:
         enabled: true
+  metrics:
+    enable:
+      all: true # customize for real project
+  tracing:
+    sampling:
+      probability: 1 # send all to collector where tail-sampling is enabled
+  opentelemetry:
+    resource-attributes:
+      service.instance.id: ${random.uuid} # https://opentelemetry.io/docs/specs/semconv/attributes-registry/service/
+
+# custom config for micrometer+otel
+otel:
+  tracing:
+    propagation:
+#      strategy: "extracted,w3c,xray"
+      extractStrategy: "extracted,w3c,xray"
+      injectStrategy: "extracted,w3c"
+  exporter:
+    endpoint: "http://localhost:4317"
+
+spring:
+  application:
+    name: spring-webmvc
+  main:
+    banner-mode: off
+  profiles:
+    active: json-file-logging
+
+logging.file.name: data/logs/${spring.application.name}.log
