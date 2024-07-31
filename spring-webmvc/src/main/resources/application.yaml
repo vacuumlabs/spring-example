@@ -1,3 +1,13 @@
+spring:
+  application:
+    name: spring-webmvc
+  main:
+    banner-mode: off
+  profiles:
+    active: json-file-logging
+
+logging.file.name: data/logs/${spring.application.name}.log
+
 management:
   endpoints:
     web:
@@ -9,6 +19,8 @@ management:
       probes:
         enabled: true
   metrics:
+    tags:
+      application: ${spring.application.name}
     enable:
       all: true # customize for real project
   tracing:
@@ -27,13 +39,3 @@ otel:
       injectStrategy: "extracted,w3c"
   exporter:
     endpoint: "http://localhost:4317"
-
-spring:
-  application:
-    name: spring-webmvc
-  main:
-    banner-mode: off
-  profiles:
-    active: json-file-logging
-
-logging.file.name: data/logs/${spring.application.name}.log
