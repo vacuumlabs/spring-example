@@ -29,4 +29,13 @@ class HelloController(
         logger.info("Bye endpoint called")
         return "Bye, World!"
     }
+
+    @GetMapping("/hello-error")
+    fun helloError(): String {
+        logger.info("Error endpoint called")
+
+        this.restTemplate.getForObject<String>("http://localhost:8080/not-existent")
+
+        return "Error, World!"
+    }
 }
