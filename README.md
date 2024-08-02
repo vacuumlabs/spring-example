@@ -8,7 +8,13 @@ the gradle build.
 These projects can also be used as components to test drive other things, such as CICD pipelines /
 Github workflows, monitoring, etc.
 
-## Docs
+Links to the individual projects / readmes:
+
+- [Spring WebMVC](spring-webmvc/README.md)
+- [Spring JPA](spring-jpa)
+- [Spring cloud-stream-kafka](spring-cloud-stream-kafka)
+
+## More docs
 
 - [Observability for Spring](spring-webmvc%2Fsrc%2Fmain%2Fkotlin%2Fcom%2Fvacuumlabs%2Fexample%2Ftelemetry%2FREADME.md)
 - Blueprints

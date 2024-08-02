@@ -5,3 +5,11 @@ and telemetry - `logback` logging, `Micrometer` metrics and `Micrometer+OpenTele
 
 More about the telemetry setup can be found in the
 [telemetry/README](src%2Fmain%2Fkotlin%2Fcom%2Fvacuumlabs%2Fexample%2Ftelemetry%2FREADME.md).
+
+## Run the application
+
+```shell
+./gradlew :spring-webmvc:bootRun
+```
+
+Access app at [http://localhost:8080](http://localhost:8080).
