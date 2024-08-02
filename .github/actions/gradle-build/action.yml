@@ -1,0 +1,32 @@
+name: Build
+description: Build a Spring Boot application with Gradle
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Java ${{ env.JAVA_VERSION }}-${{ env.JAVA_DISTRIBUTION }}
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Validate Gradle wrapper against SHA-256 checksums of official releases
+      uses: gradle/wrapper-validation-action@v1
+
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
+        build-root-directory: ${{ env.WORKDIR }}
+
+    - name: Ktlint Check
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: ktlintCheck
+        build-root-directory: ${{ env.WORKDIR }}
+
+    - name: Build and Test
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: build
+        build-root-directory: ${{ env.WORKDIR }}
